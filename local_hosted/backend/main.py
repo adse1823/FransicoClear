@@ -8,10 +8,10 @@ from typing import Optional, List, Dict
 app = FastAPI(title="SF Traffic API")
 
 # --- load CSVs relative to this file ---
-HERE = os.path.dirname(__file__)
-DATA_DIR = os.path.abspath(os.path.join(HERE, "..", "data"))
-nodes_path = os.path.join(DATA_DIR, "nodes.csv")
-edges_path = os.path.join(DATA_DIR, "edges.csv")
+# HERE = os.path.dirname(__file__)
+# DATA_DIR = os.path.abspath(os.path.join(HERE, "..", "data"))
+nodes_path = "../data/nodes.csv"
+edges_path = "../data/edges.csv"
 
 nodes_df = pd.read_csv(nodes_path)
 edges_df = pd.read_csv(edges_path)
@@ -48,6 +48,25 @@ def stats():
         "num_components": len(comps),
         "largest_component_size": max((len(c) for c in comps), default=0),
     }
+
+@app.get("/nodes")
+def list_nodes(limit: int = 2000, include_degree: bool = True):
+    """
+    Return up to `limit` nodes as {id, x, y, degree}.
+    """
+    out = []
+    count = 0
+    for n, attrs in G.nodes(data=True):
+        item = {"id": str(n)}
+        if "x" in attrs: item["x"] = float(attrs["x"])
+        if "y" in attrs: item["y"] = float(attrs["y"])
+        if include_degree:
+            item["degree"] = int(G.degree(n))
+        out.append(item)
+        count += 1
+        if count >= limit:
+            break
+    return {"nodes": out, "total": G.number_of_nodes()}
 
 @app.get("/shortest-path")
 def shortest_path(

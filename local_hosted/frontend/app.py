@@ -14,133 +14,157 @@ if st.button("Get Stats", key="btn_stats"):
     r = requests.get(f"{API_BASE}/stats", timeout=10)
     st.json(r.json() if r.ok else {"error": r.status_code, "text": r.text})
 
-st.divider()
+# st.divider()
 
-# --- Section: Shortest Path (Detailed Table) ---
-st.subheader("Find Shortest Path (Detailed Table)")
+# # --- Section: Shortest Path (Detailed Table) ---
+# st.subheader("Find Shortest Path (Detailed Table)")
 
-col1, col2, col3 = st.columns([2,2,2])
+# col1, col2, col3 = st.columns([2,2,2])
 
-with col1:
-    src = st.text_input("Source node ID", "1", key="src_detail")
-with col2:
-    dst = st.text_input("Target node ID", "3", key="dst_detail")
-with col3:
-    use_len = st.checkbox("Use 'length' weight", value=False, key="use_len_detail")
+# with col1:
+#     src = st.text_input("Source node ID", "1", key="src_detail")
+# with col2:
+#     dst = st.text_input("Target node ID", "3", key="dst_detail")
+# with col3:
+#     use_len = st.checkbox("Use 'length' weight", value=False, key="use_len_detail")
 
-if st.button("Compute Path (Table)", key="btn_detail"):
-    if not src or not dst:
-        st.warning("Please enter both source and target node IDs.")
-    else:
-        try:
-            params = {"source": src, "target": dst, "use_length": str(use_len).lower()}
-            r = requests.get(f"{API_BASE}/shortest-path-detail", params=params, timeout=20)
-            if not r.ok:
-                st.error(f"/shortest-path-detail {r.status_code}: {r.text}")
-            else:
-                data = r.json()
-                segments = data.get("segments", [])
-                if not segments:
-                    st.info("No segments returned.")
-                else:
-                    df = pd.DataFrame(segments, columns=["from_osmid", "to_osmid", "road_name", "length"])
-                    st.markdown("**Path Segments**")
-                    st.dataframe(df, use_container_width=True)
+# if st.button("Compute Path (Table)", key="btn_detail"):
+#     if not src or not dst:
+#         st.warning("Please enter both source and target node IDs.")
+#     else:
+#         try:
+#             params = {"source": src, "target": dst, "use_length": str(use_len).lower()}
+#             r = requests.get(f"{API_BASE}/shortest-path-detail", params=params, timeout=20)
+#             if not r.ok:
+#                 st.error(f"/shortest-path-detail {r.status_code}: {r.text}")
+#             else:
+#                 data = r.json()
+#                 segments = data.get("segments", [])
+#                 if not segments:
+#                     st.info("No segments returned.")
+#                 else:
+#                     df = pd.DataFrame(segments, columns=["from_osmid", "to_osmid", "road_name", "length"])
+#                     st.markdown("**Path Segments**")
+#                     st.dataframe(df, use_container_width=True)
 
-                # Optional summary
-                st.caption(
-                    f"Hops: {data.get('total_hops')}  •  "
-                    f"Weighted: {data.get('weighted')}  •  "
-                    f"Total length: {data.get('total_length') if data.get('total_length') is not None else '(n/a)'}"
-                )
-        except Exception as e:
-            st.error(f"Request failed: {e}")
+#                 # Optional summary
+#                 st.caption(
+#                     f"Hops: {data.get('total_hops')}  •  "
+#                     f"Weighted: {data.get('weighted')}  •  "
+#                     f"Total length: {data.get('total_length') if data.get('total_length') is not None else '(n/a)'}"
+#                 )
+#         except Exception as e:
+#             st.error(f"Request failed: {e}")
+
+# import os, requests, pandas as pd, streamlit as st, pydeck as pdk
+
+# API_BASE = os.getenv("API_BASE", "http://localhost:8000")
+# st.set_page_config(page_title="San Francisco Traffic Graph", layout="wide")
+# st.title("San Francisco Traffic Graph")
+
+# # --- existing sections (stats / table) stay as-is ---
+
+# st.divider()
+# st.subheader("Map View: Shortest Path")
+
+# colA, colB, colC = st.columns([2,2,2])
+# with colA:
+#     src_map = st.text_input("Source node ID (map)", value="1", key="src_map")
+# with colB:
+#     dst_map = st.text_input("Target node ID (map)", value="3", key="dst_map")
+# with colC:
+#     use_len_map = st.checkbox("Use 'length' weight (map)", value=False, key="use_len_map")
+
+# if st.button("Show on Map", key="btn_map"):
+#     try:
+#         params = {"source": src_map, "target": dst_map, "use_length": str(use_len_map).lower()}
+#         r = requests.get(f"{API_BASE}/path-geo", params=params, timeout=20)
+#         if not r.ok:
+#             st.error(f"/path-geo {r.status_code}: {r.text}")
+#         else:
+#             data = r.json()
+#             nodes = data["nodes"]          # [{id, lon, lat}, ...]
+#             line_coords = data["line"]     # [[lon, lat], ...]
+
+#             if not nodes:
+#                 st.info("No nodes to plot.")
+#             else:
+#                 # Center view on first node
+#                 center_lon, center_lat = nodes[0]["lon"], nodes[0]["lat"]
+
+#                 # Layers: path line + endpoints
+#                 path_layer = pdk.Layer(
+#                     "PathLayer",
+#                     data=[{"path": [[c[0], c[1]] for c in line_coords], "name": "route"}],
+#                     get_path="path",
+#                     width_scale=1,
+#                     width_min_pixels=4,
+#                     get_color=[0, 0, 255, 180],
+#                     pickable=True,
+#                 )
+#                 nodes_layer = pdk.Layer(
+#                     "ScatterplotLayer",
+#                     data=nodes,
+#                     get_position="[lon, lat]",
+#                     get_radius=8,
+#                     radius_min_pixels=4,
+#                     get_fill_color=[255, 0, 0, 200],
+#                     pickable=True,
+#                 )
+
+#                 deck = pdk.Deck(
+#                     initial_view_state=pdk.ViewState(
+#                         longitude=center_lon,
+#                         latitude=center_lat,
+#                         zoom=13,
+#                         pitch=0,
+#                         bearing=0,
+#                     ),
+#                     layers=[path_layer, nodes_layer],
+#                     map_style="mapbox://styles/mapbox/light-v9",  # optional; works without Mapbox token
+#                     tooltip={"text": "{name}"},
+#                 )
+#                 st.pydeck_chart(deck, use_container_width=True)
+
+#                 # Optional: show node table under the map
+#                 st.caption("Path nodes (lon/lat)")
+#                 st.dataframe(pd.DataFrame(nodes), use_container_width=True)
+
+#     except Exception as e:
+#         st.error(f"Map request failed: {e}")
+
+
+# import requests
+
+# @st.cache_data(ttl=300)
+# def fetch_nodes():
+#     resp = requests.get("http://localhost:8000/nodes", params={"limit": 500})
+#     resp.raise_for_status()
+#     return resp.json()["nodes"]
+
+# nodes = fetch_nodes()   # [{'id': '65284851', 'x': -122.42, 'y': 37.77, 'degree': 3}, ...]
+
+# def labeler(n):
+#     return f"{n['id']}  (deg={n.get('degree',0)}, {n['x']:.5f},{n['y']:.5f})"
+
+# src = st.selectbox("Source node", nodes, format_func=labeler, key="src_node")
+# dst = st.selectbox("Target node", nodes, format_func=labeler, key="dst_node")
+
+# src_id, dst_id = src["id"], dst["id"]
+# st.write("Picked:", src_id, "→", dst_id)
+
 
 import os, requests, pandas as pd, streamlit as st, pydeck as pdk
 
 API_BASE = os.getenv("API_BASE", "http://localhost:8000")
-st.set_page_config(page_title="San Francisco Traffic Graph", layout="wide")
-st.title("San Francisco Traffic Graph")
-
-# --- existing sections (stats / table) stay as-is ---
-
-st.divider()
-st.subheader("Map View: Shortest Path")
-
-colA, colB, colC = st.columns([2,2,2])
-with colA:
-    src_map = st.text_input("Source node ID (map)", value="1", key="src_map")
-with colB:
-    dst_map = st.text_input("Target node ID (map)", value="3", key="dst_map")
-with colC:
-    use_len_map = st.checkbox("Use 'length' weight (map)", value=False, key="use_len_map")
-
-if st.button("Show on Map", key="btn_map"):
-    try:
-        params = {"source": src_map, "target": dst_map, "use_length": str(use_len_map).lower()}
-        r = requests.get(f"{API_BASE}/path-geo", params=params, timeout=20)
-        if not r.ok:
-            st.error(f"/path-geo {r.status_code}: {r.text}")
-        else:
-            data = r.json()
-            nodes = data["nodes"]          # [{id, lon, lat}, ...]
-            line_coords = data["line"]     # [[lon, lat], ...]
-
-            if not nodes:
-                st.info("No nodes to plot.")
-            else:
-                # Center view on first node
-                center_lon, center_lat = nodes[0]["lon"], nodes[0]["lat"]
-
-                # Layers: path line + endpoints
-                path_layer = pdk.Layer(
-                    "PathLayer",
-                    data=[{"path": [[c[0], c[1]] for c in line_coords], "name": "route"}],
-                    get_path="path",
-                    width_scale=1,
-                    width_min_pixels=4,
-                    get_color=[0, 0, 255, 180],
-                    pickable=True,
-                )
-                nodes_layer = pdk.Layer(
-                    "ScatterplotLayer",
-                    data=nodes,
-                    get_position="[lon, lat]",
-                    get_radius=8,
-                    radius_min_pixels=4,
-                    get_fill_color=[255, 0, 0, 200],
-                    pickable=True,
-                )
-
-                deck = pdk.Deck(
-                    initial_view_state=pdk.ViewState(
-                        longitude=center_lon,
-                        latitude=center_lat,
-                        zoom=13,
-                        pitch=0,
-                        bearing=0,
-                    ),
-                    layers=[path_layer, nodes_layer],
-                    map_style="mapbox://styles/mapbox/light-v9",  # optional; works without Mapbox token
-                    tooltip={"text": "{name}"},
-                )
-                st.pydeck_chart(deck, use_container_width=True)
-
-                # Optional: show node table under the map
-                st.caption("Path nodes (lon/lat)")
-                st.dataframe(pd.DataFrame(nodes), use_container_width=True)
-
-    except Exception as e:
-        st.error(f"Map request failed: {e}")
-
-import os, requests, pandas as pd, streamlit as st, pydeck as pdk
-
-API_BASE = os.getenv("API_BASE", "http://localhost:8000")
+r_list = requests.get(f"{API_BASE}/get_nodes", timeout=10)
+print(r_list)
+# r_nodes = r_list_data['a']
 
 st.divider()
 st.subheader("Map View: Full Network + Shortest Path")
 
-c1, c2, c3, c4 = st.columns([2,2,2,2])
+c1, c2, c3, c4,c5 = st.columns([2,2,2,2,1])
 with c1:
     src_map = st.text_input("Source node ID (map)", value="1", key="src_map2")
 with c2:
@@ -149,7 +173,8 @@ with c3:
     use_len_map = st.checkbox("Use 'length' weight (map)", value=False, key="use_len_map2")
 with c4:
     zoom_level = st.slider("Zoom", 8, 18, 13, key="zoom_map2")
-
+with c5:
+    slc_map = st.selectbox('Pick one',r_list,index = 0, key = 'Pick_one')
 if st.button("Show Network + Route", key="btn_map2"):
     try:
         # 1) Fetch the whole graph (edges)
