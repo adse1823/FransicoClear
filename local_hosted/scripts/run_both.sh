@@ -17,28 +17,30 @@ setup_venv() {
   # create venv if missing
   if [[ ! -d "${dir}/.venv" ]]; then
     echo "[setup] Creating virtual environment in ${dir}/.venv"
-    python3 -m venv "${dir}/.venv"
+    python -m venv "${dir}/.venv"
   fi
 
-  # activate venv (cross-platform: bin vs Scripts)
-  if [[ -f "${dir}/.venv/bin/activate" ]]; then
-    source "${dir}/.venv/bin/activate"
-    echo "${dir} venv activated"
-  elif [[ -f "${dir}/.venv/Scripts/activate" ]]; then
-    source "${dir}/.venv/Scripts/activate"
-    echo "${dir} venv activated"
+  # figure out python path (Windows vs Linux/macOS)
+  local PY
+  if [[ -x "${dir}/.venv/bin/python" ]]; then
+    PY="${dir}/.venv/bin/python"
+  elif [[ -x "${dir}/.venv/Scripts/python.exe" ]]; then
+    PY="${dir}/.venv/Scripts/python.exe"
   else
-    echo "[setup] Error: cannot find activate script in ${dir}/.venv"
+    echo "[setup] Error: cannot find venv python in ${dir}/.venv"
     exit 1
   fi
+
+  echo "[setup] Using interpreter: $PY"
 
   # install/upgrade requirements if file exists
   if [[ -f "$reqfile" ]]; then
     echo "[setup] Installing/upgrading requirements from $reqfile..."
-    pip install --upgrade pip setuptools wheel -q
-    pip install -r "$reqfile" -q
+    "$PY" -m pip install --upgrade pip wheel -q
+    "$PY" -m pip install -r "$reqfile" -q
   fi
 }
+
 
 # --- sanity checks ---
 if [[ ! -d "${BACKEND_DIR}" ]]; then
