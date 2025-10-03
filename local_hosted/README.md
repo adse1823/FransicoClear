@@ -6,7 +6,7 @@ This README is the single source of truth. No features land unless they’re in 
 ---
 
 ## Phase 0 — Foundations ✅/⬜
-- [x] Clean repo structure (`backend/`, `frontend/`, `data/`, `scripts/`)
+- [ ] Clean repo structure (`backend/`, `frontend/`, `data/`, `scripts/`)
 - [ ] Pinned deps (`numpy==1.26.4`, `pandas==2.2.2`)
 - [ ] `scripts/run_both.sh` runs backend+frontend locally
 - [ ] `/docs` shows endpoints; screenshots in README
