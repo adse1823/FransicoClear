@@ -1,6 +1,6 @@
 # Entity–Relationship Diagram
 
-> This ERD reflects the final product scope: single user edits the map (add/remove connections), sets time/day, builds a digital twin, injects accidents, runs a simulation, and compares KPIs before/after.
+This ERD reflects the final product scope: a single user edits the map (add/remove connections), sets time/day, builds a digital twin, injects accidents, runs a simulation, and compares KPIs before/after.
 
 ```mermaid
 erDiagram
@@ -14,8 +14,8 @@ erDiagram
 
   EDGE {
     string edge_id PK
-    string u FK  "-> NODE.node_id"
-    string v FK  "-> NODE.node_id"
+    string u
+    string v
     float  length_m
     int    lanes
     float  speed_kph
@@ -26,7 +26,7 @@ erDiagram
 
   NETWORK_VERSION {
     string network_version_id PK
-    string parent_version_id FK "-> NETWORK_VERSION.network_version_id"
+    string parent_version_id
     string checksum
     datetime created_at
   }
@@ -35,91 +35,91 @@ erDiagram
   SCENARIO {
     string  scenario_id PK
     string  name
-    string  base_network_version FK "-> NETWORK_VERSION.network_version_id"
-    string  day_type_id FK "-> DAY_TYPE.day_type_id"
-    string  time_of_day  "HH:MM"
+    string  base_network_version
+    string  day_type_id
+    string  time_of_day
     datetime created_at
     string  description
   }
 
   SCENARIO_EDIT {
-    string edit_id PK
-    string scenario_id FK "-> SCENARIO.scenario_id"
-    string type  "add_edge | remove_edge | modify_edge"
-    string edge_id FK "-> EDGE.edge_id" 
-    json   delta_json  "attrs for modify"
-    geojson geometry   "for add_edge"
+    string   edit_id PK
+    string   scenario_id
+    string   type
+    string   edge_id
+    json     delta_json
+    geojson  geometry
     datetime created_at
   }
 
   INCIDENT {
-    string incident_id PK
-    string scenario_id FK "-> SCENARIO.scenario_id"
-    string edge_id FK "-> EDGE.edge_id"
+    string   incident_id PK
+    string   scenario_id
+    string   edge_id
     datetime start_time
     int      duration_min
-    string   severity     "lane_drop | closure"
+    string   severity
     int      lanes_lost
   }
 
   %% ========= Time & Demand =========
   DAY_TYPE {
-    string day_type_id PK  "Weekday | Weekend | Event"
-    string demand_profile_id FK "-> DEMAND_PROFILE.demand_profile_id"
+    string day_type_id PK
+    string demand_profile_id
   }
 
   DEMAND_PROFILE {
     string demand_profile_id PK
-    string level  "global | corridor | link"
-    json   targets "ids when not global"
-    json   bins    "[{start,end,multiplier}]"
+    string level
+    json   targets
+    json   bins
   }
 
   %% ========= Twin & Simulation =========
   TWIN_CONFIG {
     string  twin_config_id PK
-    string  scenario_id FK "-> SCENARIO.scenario_id"
-    string  resolved_network_version FK "-> NETWORK_VERSION.network_version_id"
-    string  demand_profile_id FK "-> DEMAND_PROFILE.demand_profile_id"
-    string  sim_engine  "e.g., SUMO"
-    json    engine_params "{step_length_s,warmup_min,seed}"
-    json    resolved_time_window "{start,end}"
+    string  scenario_id
+    string  resolved_network_version
+    string  demand_profile_id
+    string  sim_engine
+    json    engine_params
+    json    resolved_time_window
   }
 
   SIMULATION_RUN {
-    string  run_id PK
-    string  twin_config_id FK "-> TWIN_CONFIG.twin_config_id"
-    string  controller  "baseline | optimized"
-    json    controller_params
+    string   run_id PK
+    string   twin_config_id
+    string   controller
+    json     controller_params
     datetime started_at
     datetime ended_at
-    string  status "queued|running|succeeded|failed"
+    string   status
   }
 
   SIM_KPI {
-    string  kpi_id PK
-    string  run_id FK "-> SIMULATION_RUN.run_id"
-    string  edge_id FK "-> EDGE.edge_id"
+    string   kpi_id PK
+    string   run_id
+    string   edge_id
     datetime t_bin_start
-    float   delay_s
-    float   queue_m
-    float   speed_kph
-    float   flow_vph
-    float   stops_per_km
+    float    delay_s
+    float    queue_m
+    float    speed_kph
+    float    flow_vph
+    float    stops_per_km
   }
 
   RUN_SUMMARY {
-    string  run_id PK FK "-> SIMULATION_RUN.run_id"
-    float   avg_delay_s
-    float   p95_travel_time_s
-    float   max_queue_m
-    json    top_bottlenecks "[{edge_id,queue_m}]"
+    string run_id PK
+    float  avg_delay_s
+    float  p95_travel_time_s
+    float  max_queue_m
+    json   top_bottlenecks
   }
 
   %% ========= Optional Optimization =========
   SIGNAL_CONSTRAINTS {
     string constraints_id PK
-    string scenario_id FK "-> SCENARIO.scenario_id"
+    string scenario_id
     int    min_green_s
     int    max_green_s
     int    ped_walk_s
@@ -131,11 +131,11 @@ erDiagram
   }
 
   OPTIMIZATION_RESULT {
-    string opt_id PK
-    string scenario_id FK "-> SCENARIO.scenario_id"
-    json   plan "per-signal: cycle,splits,offsets"
-    json   expected_kpi_delta "{avg_delay_s, max_queue_m}"
-    string validated_in_run_id FK "-> SIMULATION_RUN.run_id"
+    string   opt_id PK
+    string   scenario_id
+    json     plan
+    json     expected_kpi_delta
+    string   validated_in_run_id
     datetime created_at
   }
 
@@ -145,12 +145,12 @@ erDiagram
   SCENARIO ||--o{ SCENARIO_EDIT : has
   SCENARIO ||--o{ INCIDENT : has
   DAY_TYPE ||--|| DEMAND_PROFILE : "selects profile"
-  SCENARIO ||--|| DAY_TYPE : "uses"
-  SCENARIO ||--o{ SIGNAL_CONSTRAINTS : "optional"
-  SCENARIO ||--o{ TWIN_CONFIG : "derives"
-  TWIN_CONFIG ||--o{ SIMULATION_RUN : "executions"
-  SIMULATION_RUN ||--o{ SIM_KPI : "produces"
-  SIMULATION_RUN ||--|| RUN_SUMMARY : "summarizes"
+  SCENARIO ||--|| DAY_TYPE : uses
+  SCENARIO ||--o{ SIGNAL_CONSTRAINTS : constraints
+  SCENARIO ||--o{ TWIN_CONFIG : derives
+  TWIN_CONFIG ||--o{ SIMULATION_RUN : executions
+  SIMULATION_RUN ||--o{ SIM_KPI : produces
+  SIMULATION_RUN ||--|| RUN_SUMMARY : summarizes
   EDGE ||--o{ SIM_KPI : "metrics-by-edge"
-  SCENARIO ||--o{ OPTIMIZATION_RESULT : "yields"
+  SCENARIO ||--o{ OPTIMIZATION_RESULT : yields
   SIMULATION_RUN ||--o{ OPTIMIZATION_RESULT : "validated_by (optional)"
