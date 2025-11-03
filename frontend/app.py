@@ -9,7 +9,8 @@ import requests
 # ---- Config (defaults; can override via env) ----
 API_BASE = os.getenv("API_BASE", f"http://localhost:{os.getenv('API_PORT','8000')}").rstrip("/")
 
-st.set_page_config(page_title="SF Traffic MVP (Minimal)", layout="wide")
+st.set_page_config(page_title="SF Traffic MVP (Minimal)", 
+                   layout="wide")
 
 st.title("SF Traffic — Minimal MVP")
 st.caption("Graph stats + city map. Toggle changes line thickness by edge length (if available).")

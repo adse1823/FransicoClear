@@ -4,6 +4,7 @@
 
 # Activate virtual environment if needed (uncomment and edit if using venv)
 # source venv/bin/activate
+# Make more changes
 
 # Start backend (FastAPI)
 echo "Starting backend (FastAPI) on port 8000..."
